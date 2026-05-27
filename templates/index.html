@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Outfit AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@300;400;500&display=swap"
+        rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <!-- Background Video -->
+    <video class="bg-video" autoplay muted loop>
+        <source src="{{ url_for('static', filename='Bg video.mp4') }}" type="video/mp4">
+    </video>
+
+    <div class="container">
+
+        <h1>Smart Outfit AI</h1>
+        <p class="subtitle">AI-powered fashion recommendation system</p>
+
+        <!-- Hover Cards -->
+        <div class="cards">
+            <div class="card">
+                <img src="{{ url_for('static', filename='chris-evans-actor.jpg') }}">
+                <div class="label">Fair</div>
+            </div>
+            <div class="card">
+                <img src="{{ url_for('static', filename='Bradd .jpeg') }}">
+                <div class="label">Medium</div>
+            </div>
+            <div class="card">
+                <img src="{{ url_for('static', filename='Gemini_Generated_Image_ry5vmnry5vmnry5v.png') }}">
+                <div class="label">Tan</div>
+            </div>
+            <div class="card">
+                <img src="{{ url_for('static', filename='Which-Colour-Suits-On-Dark-Skin-Female-Indian 2.jpg') }}">
+                <div class="label">Deep</div>
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <button class="btn" onclick="goNext()">LET’S CUSTOMIZE →</button>
+
+    </div>
+
+    <script>
+        function goNext() {
+            window.location.href = "{{ url_for('customize') }}";
+        }
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,8 @@
+flask
+opencv-python
+numpy
+pandas
+pillow
+groq
+googlesearch-python
+python-dotenv

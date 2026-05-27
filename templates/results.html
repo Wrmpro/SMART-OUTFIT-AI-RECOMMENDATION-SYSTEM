@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>AI Recommended Outfits</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='results.css') }}">
+</head>
+
+<body>
+
+    <div class="layout">
+
+        <!-- LEFT -->
+        <div class="left-panel">
+
+            <div class="user-frame">
+                <img id="userImage" class="user-image">
+
+                <div class="scan-line"></div>
+
+                <div class="skin-popup" id="skinPopup">
+                    <canvas id="skinCanvas"></canvas>
+                </div>
+            </div>
+
+            <div class="skin-result" id="skinResult"></div>
+
+            <div class="ai-steps">
+                <div class="step" id="step1">✓ Face detected</div>
+                <div class="step" id="step2">✓ Skin tone analyzed</div>
+                <div class="step" id="step3">✓ Outfit optimized</div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT -->
+        <div class="right-panel">
+
+            <h2>AI Recommended Outfits</h2>
+
+            <div class="outfit-grid" id="outfitGrid"></div>
+
+            <div class="palette-card">
+                <h3>Outfit Color Palette</h3>
+                <div class="palette-grid" id="paletteGrid"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- MODAL -->
+    <div class="modal" id="modal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close" onclick="closeModal()">×</span>
+            <div id="modalImages" class="modal-images"></div>
+            <div id="modalText" class="modal-text"></div>
+        </div>
+    </div>
+
+    <script>
+        // Ensure result data exists
+        let result = null;
+        try {
+            result = JSON.parse(sessionStorage.getItem("ai_result"));
+            if (!result) {
+                throw new Error("No result data found in session storage.");
+            }
+        } catch (e) {
+            console.error("Error loading result:", e);
+            document.body.innerHTML = `
+                <div style='color: white; text-align: center; margin-top: 50px; font-family: sans-serif;'>
+                    <h2>Oops! Results could not be loaded.</h2>
+                    <p>${e.message}</p>
+                    <button onclick="window.location.href='/customize'" style="padding: 10px 20px; background: #00ffff; border: none; border-radius: 5px; cursor: pointer;">Go Back</button>
+                </div>`;
+        }
+
+        if (result) {
+            userImage.src = result.user_image;
+            skinResult.innerText = "Detected Skin Tone · " + result.skin_tone;
+
+            /* ===== STEPS ===== */
+            setTimeout(() => step1.classList.add("show"), 400);
+            setTimeout(() => step2.classList.add("show"), 900);
+            setTimeout(() => step3.classList.add("show"), 1400);
+
+            /* ===== SKIN PATCH ===== */
+            userImage.onload = () => {
+                const ctx = skinCanvas.getContext("2d");
+                skinCanvas.width = 50;
+                skinCanvas.height = 50;
+                ctx.drawImage(
+                    userImage,
+                    userImage.naturalWidth * 0.4,
+                    userImage.naturalHeight * 0.2,
+                    userImage.naturalWidth * 0.2,
+                    userImage.naturalHeight * 0.2,
+                    0, 0, 50, 50
+                );
+                setTimeout(() => skinPopup.classList.add("show"), 600);
+                render();
+            };
+
+            /* ===== COLOR EXTRACTION ===== */
+            function getColor(img) {
+                try {
+                    const c = document.createElement("canvas");
+                    const ctx = c.getContext("2d");
+                    c.width = 50; c.height = 50;
+                    ctx.drawImage(img, 0, 0, 50, 50);
+                    const d = ctx.getImageData(0, 0, 50, 50).data;
+                    let r = 0, g = 0, b = 0, count = 0;
+                    for (let i = 0; i < d.length; i += 40) {
+                        r += d[i]; g += d[i + 1]; b += d[i + 2]; count++;
+                    }
+                    return `rgb(${r / count},${g / count},${b / count})`;
+                } catch { return null; }
+            }
+
+            /* ===== RENDER OUTFITS ===== */
+            function render() {
+                const grid = document.getElementById("outfitGrid");
+                grid.innerHTML = ""; // Clear existing
+
+                result.outfits.forEach((o, i) => {
+                    const conf = 95 - i * 3 + Math.floor(Math.random() * 4);
+                    const isSingleBlock = o.is_party === true || o.bottom_name === "Matching Piece" || o.bottom_name === "N/A (Full Set)" || o.top_image_link === o.bottom_image_link;
+                    
+                    const card = document.createElement('div');
+                    card.className = `outfit-card ${isSingleBlock ? 'single-outfit' : 'dual-outfit'}`;
+                    
+                    let imagesHTML = "";
+                    if (isSingleBlock) {
+                        imagesHTML = `
+                            <div class="outfit-box single-block">
+                                <img src="${o.top_image_link}" class="img-item img-single" loading="lazy" onerror="handleImageError(this)">
+                            </div>`;
+                    } else {
+                        imagesHTML = `
+                            <div class="outfit-box dual-block">
+                                <img src="${o.top_image_link}" class="img-item img-top" loading="lazy" onerror="handleImageError(this, 'Top')">
+                                <img src="${o.bottom_image_link}" class="img-item img-bottom" loading="lazy" onerror="handleImageError(this, 'Bottom')">
+                            </div>`;
+                    }
+
+                    card.innerHTML = `
+                        ${i === 0 ? '<div class="best-badge">BEST MATCH</div>' : ''}
+                        ${imagesHTML}
+                        <div class="outfit-details">
+                            <p class="top-name">${o.top_name}</p>
+                            ${!isSingleBlock ? `<p class="bottom-name">${o.bottom_name}</p>` : ''}
+                            ${o.color_combo ? `<p class="color-combo">Colors: ${o.color_combo}</p>` : ''}
+                        </div>
+                        <div class="rationale">
+                            <p><strong>AI Stylist:</strong> ${o.rationale}</p>
+                        </div>
+                        <div class="confidence">
+                            <div class="bar"><div class="fill" style="width:${conf}%"></div></div>
+                            <small>${conf}% confidence</small>
+                        </div>
+                    `;
+
+                    // ROBUST CLICK HANDLER
+                    card.onclick = (e) => {
+                        e.preventDefault();
+                        openModal(o, isSingleBlock);
+                    };
+
+                    grid.appendChild(card);
+                });
+
+                loadPalette();
+            }
+
+            function handleImageError(img, type = 'Outfit') {
+                img.onerror = null; // Prevent infinite loop
+                // Use a more attractive placeholder
+                img.src = `https://via.placeholder.com/300x400/1a1a1a/00ffff?text=${encodeURIComponent(type)}`;
+            }
+
+            /* ===== PALETTE ===== */
+            function loadPalette() {
+                const imgs = document.querySelectorAll(".img-item");
+                Promise.all(Array.from(imgs).map(img => {
+                    return new Promise(res => {
+                        if (img.complete) res();
+                        else { img.onload = res; img.onerror = res; }
+                    });
+                })).then(() => {
+                    let added = 0;
+                    imgs.forEach(img => {
+                        const color = getColor(img);
+                        if (color) {
+                            const d = document.createElement("div");
+                            d.style.background = color;
+                            paletteGrid.appendChild(d);
+                            added++;
+                        }
+                    });
+                    if (added === 0) {
+                        ["#00ffff", "#ffcc00", "#ff5733", "#4caf50", "#2196f3"].forEach(c => {
+                            const d = document.createElement("div");
+                            d.style.background = c;
+                            paletteGrid.appendChild(d);
+                        });
+                    }
+                });
+            }
+
+            /* ===== MODAL ===== */
+            function openModal(outfit, isSingleBlock) {
+                const modal = document.getElementById('modal');
+                const modalImagesDiv = document.getElementById('modalImages');
+                const modalTextDiv = document.getElementById('modalText');
+                
+                modalImagesDiv.innerHTML = '';
+                
+                if (isSingleBlock) {
+                    const img = document.createElement('img');
+                    img.src = outfit.top_image_link;
+                    img.onerror = () => handleImageError(img);
+                    modalImagesDiv.appendChild(img);
+                    modalImagesDiv.className = 'modal-images single-modal';
+                } else {
+                    const imgTop = document.createElement('img');
+                    imgTop.src = outfit.top_image_link;
+                    imgTop.onerror = () => handleImageError(imgTop, 'Top');
+                    
+                    const imgBottom = document.createElement('img');
+                    imgBottom.src = outfit.bottom_image_link;
+                    imgBottom.onerror = () => handleImageError(imgBottom, 'Bottom');
+                    
+                    modalImagesDiv.appendChild(imgTop);
+                    modalImagesDiv.appendChild(imgBottom);
+                    modalImagesDiv.className = 'modal-images';
+                }
+                
+                const outfitName = isSingleBlock ? outfit.top_name : `${outfit.top_name} + ${outfit.bottom_name}`;
+                modalTextDiv.innerHTML = `
+                    <h3 style="color: #00ffff; margin-bottom: 15px;">${outfitName}</h3>
+                    <p style="margin-bottom: 10px;"><em>AI Stylist Rationale:</em> ${outfit.rationale}</p>
+                    ${outfit.color_combo ? `<p style="color: #00ffd0;"><strong>Color Combination:</strong> ${outfit.color_combo}</p>` : ''}
+                `;
+                
+                modal.classList.add("show");
+            }
+
+            function closeModal(event) {
+                if (event && event.target !== document.getElementById('modal') && event.target !== document.querySelector('.close')) return;
+                document.getElementById('modal').classList.remove("show");
+            }
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeModal();
+            });
+        }
+    </script>
+
+</body>
+
+</html>

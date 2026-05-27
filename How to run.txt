@@ -1,0 +1,4 @@
+Download repo as zip file
+get ur own groq api key from website then create a .env file inside the extracted folder after that give groq api key there with GROQ_API_KEY="GIVE UR KEY HERE"
+now open folder in cmd use python app.py command to run the file 
+now u will get output from terminal/cmd a ip address link will be shown go to this website now u can use Smart-Outfit-ai Application

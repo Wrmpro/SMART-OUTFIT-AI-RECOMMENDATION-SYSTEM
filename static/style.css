@@ -1,0 +1,136 @@
+/* RESET */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    height: 100vh;
+    font-family: 'Poppins', sans-serif;
+    overflow: hidden;
+    position: relative;
+    background: #000;
+    color: #fff;
+}
+
+/* 🔥 Background Video */
+.bg-video {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -2;
+    opacity: 0.35;
+    filter: blur(5px);
+}
+
+/* Dark overlay for readability */
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.18);
+    z-index: -1;
+}
+
+/* Main container */
+.container {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+}
+
+/* Heading */
+h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 52px;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+}
+
+.subtitle {
+    font-size: 15px;
+    color: #dddddd;
+    margin-bottom: 40px;
+}
+
+/* Cards layout */
+.cards {
+    display: flex;
+    width: 90%;
+    height: 380px;
+    gap: 16px;
+    margin-bottom: 40px;
+}
+
+/* Individual card */
+.card {
+    flex: 1;
+    border-radius: 20px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: flex 0.6s ease, transform 0.4s ease;
+    position: relative;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Card image */
+.card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(10%);
+    transition: transform 0.6s ease, filter 0.6s ease;
+}
+
+/* Hover animation */
+.card:hover {
+    flex: 2.3;
+    transform: translateY(-8px);
+}
+
+.card:hover img {
+    transform: scale(1.05);
+    filter: grayscale(0%);
+}
+
+/* Card label */
+.label {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.65);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+}
+
+/* CTA Button */
+.btn {
+    margin-top: 10px;
+    padding: 14px 36px;
+    font-size: 14px;
+    letter-spacing: 1px;
+    border-radius: 40px;
+    border: none;
+    background: #ffffff;
+    color: #000000;
+    cursor: pointer;
+    transition: all 0.4s ease;
+}
+
+.btn:hover {
+    background: #2f6f6b;
+    color: #ffffff;
+    transform: translateY(-3px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.35);
+}
